@@ -1,3 +1,13 @@
+---
+title: CV Detection Demo
+emoji: 🎯
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # CV Object Detection — Full CI/CD Demo
 
 A small object detection service (YOLOv8 + FastAPI) built specifically to
