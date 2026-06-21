@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.git/
+.github/
+.pytest_cache/
+.venv/
+venv/
+tests/
+*.md
+.gitignore
+.dockerignore
+runs/
+*.pt
+!yolov8n.pt

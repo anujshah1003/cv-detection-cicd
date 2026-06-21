@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Model weights -- downloaded automatically, shouldn't bloat git history.
+# See README for how model versioning is handled instead.
+*.pt
+runs/
+
+.env
+.DS_Store

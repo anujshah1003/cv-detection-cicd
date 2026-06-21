@@ -1,0 +1,50 @@
+name: CI
+
+# Run on every push and on every PR targeting main. This is the
+# "Continuous Integration" half of CI/CD: validate every change
+# automatically, before it's allowed to merge.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"  # caches pip downloads between runs -> faster CI
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with ruff
+        run: |
+          ruff check app/ tests/
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+
+      # This step demonstrates a "model sanity check" as an explicit,
+      # separate gate -- distinct from unit tests. In a larger project
+      # you might run this as its own job with its own pass/fail status,
+      # e.g. to gate on inference latency or detection count thresholds.
+      - name: Model smoke test (load + single inference)
+        run: |
+          python -c "
+          from app.detector import ObjectDetector
+          d = ObjectDetector()
+          dets = d.predict('tests/assets/test_image.jpg')
+          print(f'Smoke test OK -- {len(dets)} detection(s) on test image')
+          "

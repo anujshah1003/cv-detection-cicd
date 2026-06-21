@@ -1,0 +1,47 @@
+name: CD
+
+# Runs only on pushes to main (i.e. after a PR has been merged), and only
+# AFTER CI succeeds -- we never want to deploy code that hasn't passed
+# tests. That dependency is expressed via workflow_run below.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # Only proceed if the CI workflow that triggered this actually passed.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # --- Build stage: prove the Docker image builds correctly ---
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: cv-detection-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # --- Deploy stage: push to Hugging Face Spaces ---
+      # Hugging Face Spaces can build directly from a Dockerfile pushed to
+      # a Space's own git repo, so "deploying" here means pushing our repo
+      # content to the Space's git remote, which triggers HF's own build.
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE_REPO }}  # e.g. username/cv-detection-demo
+        run: |
+          git config --global user.email "ci-bot@example.com"
+          git config --global user.name "CI Bot"
+          git remote add space https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}
+          git push --force space main
