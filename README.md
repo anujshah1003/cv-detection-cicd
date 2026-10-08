@@ -99,7 +99,7 @@ This is worth saying explicitly in an interview: "code versioning and
 model versioning are separate concerns, and conflating them by committing
 weights directly to git doesn't scale."
 
-## What I'd add next (good interview talking points)
+## What I'd add next
 
 - A **regression test** against a curated real-world image with known
   expected detections, to catch accuracy regressions
